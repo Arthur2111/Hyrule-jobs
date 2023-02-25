@@ -1,9 +1,11 @@
 <template>
   <div class="job-list">
-    <ul>
-      <li v-for="job in jobs" :key="job.id">
+    <p>Ordered by {{ order }}</p>
+    <transition-group  name="list" tag="ul">
+      <li v-for="job in orderedJobs" :key="job.id">
         <h2>{{ job.title }} in {{ job.location }}</h2>
         <div class="salary">
+          <img src="../assets/rupee.svg" alt="rupee">
           <p>{{ job.salary }}</p>
         </div>
         <div class="description">
@@ -15,21 +17,35 @@
           </p>
         </div>
       </li>
-    </ul>
+    </transition-group>
   </div>
 </template>
 
 <script lang="ts">
 // to specify which
-import { defineComponent, PropType } from "vue";
-import Job from "@/types/job";
+import { computed, defineComponent, PropType } from "vue";
+import job from "@/types/job";
+import OrderTerm from "@/types/OrderTerm";
 
 export default defineComponent({
   props: {
     jobs: {
-      type: Array as PropType<Job[]>,
+      type: Array as PropType<job[]>,
       required: true,
     },
+    order: {
+      required: true,
+      type: String as PropType<OrderTerm>,
+    },
+  },
+  setup(props) {
+    const orderedJobs = computed(() => {
+      // as we shouldnt mutate props directly we will create a new array identical to jobs and sort this new array
+      return [...props.jobs].sort((a: job, b: job) => {
+        return a[props.order] > b[props.order] ? 1 : -1;
+      });
+    });
+    return { orderedJobs };
   },
 });
 </script>
@@ -63,5 +79,9 @@ export default defineComponent({
   color: #17bf66;
   font-weight: bold;
   margin: 10px 4px;
+}
+
+.list-move{
+  transition: all  1s;
 }
 </style>
